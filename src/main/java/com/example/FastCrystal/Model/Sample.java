@@ -2,16 +2,18 @@ package com.example.FastCrystal.Model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "samples")
 public class Sample {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "sample_id")
-    private String sampleId;
+    private Integer sampleId;
 
     @Column(name = "protein_name")
     private String proteinName;
@@ -26,61 +28,107 @@ public class Sample {
     private Double mechanicalVibration;
 
     @Column(name = "image_path")
-    private String imagePath;
+    private String imageFilename;
 
     @Column(name = "capture_date")
-    private java.time.LocalDateTime captureDate;
+    private LocalDateTime captureDate;
 
-    @Column(name = "incubation_period")
-    private Double incubationPeriod;
+    @Column(name = "status")
+    private String status;
 
     @Column(name = "created_at", updatable = false)
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = java.time.LocalDateTime.now();
-        this.captureDate = java.time.LocalDateTime.now();
 
-        if (this.incubationPeriod == null) {
-            this.incubationPeriod = 0.0;
+        this.createdAt = LocalDateTime.now();
+
+        if (this.status == null) {
+            this.status = "PENDING";
         }
     }
 
-    private String status;
+    public Sample() {
+    }
 
-    public Sample() {}
+    public Integer getId() {
+        return id;
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public String getSampleId() { return sampleId; }
-    public void setSampleId(String sampleId) { this.sampleId = sampleId; }
+    public Integer getSampleId() {
+        return sampleId;
+    }
 
-    public String getProteinName() { return proteinName; }
-    public void setProteinName(String proteinName) { this.proteinName = proteinName; }
+    public void setSampleId(Integer sampleId) {
+        this.sampleId = sampleId;
+    }
 
-    public Double getGravityLevel() { return gravityLevel; }
-    public void setGravityLevel(Double gravityLevel) { this.gravityLevel = gravityLevel; }
+    public String getProteinName() {
+        return proteinName;
+    }
 
-    public Double getTemperature() { return temperature; }
-    public void setTemperature(Double temperature) { this.temperature = temperature; }
+    public void setProteinName(String proteinName) {
+        this.proteinName = proteinName;
+    }
 
-    public Double getMechanicalVibration() { return mechanicalVibration; }
-    public void setMechanicalVibration(Double mechanicalVibration) { this.mechanicalVibration = mechanicalVibration; }
+    public Double getGravityLevel() {
+        return gravityLevel;
+    }
 
-    public String getImagePath() { return imagePath; }
-    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+    public void setGravityLevel(Double gravityLevel) {
+        this.gravityLevel = gravityLevel;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public Double getTemperature() {
+        return temperature;
+    }
 
-    public java.time.LocalDateTime getCaptureDate() { return captureDate; }
-    public void setCaptureDate(java.time.LocalDateTime captureDate) { this.captureDate = captureDate; }
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
+    }
 
-    public Double getIncubationPeriod() { return incubationPeriod; }
-    public void setIncubationPeriod(Double incubationPeriod) { this.incubationPeriod = incubationPeriod; }
+    public Double getMechanicalVibration() {
+        return mechanicalVibration;
+    }
 
-    public java.time.LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setMechanicalVibration(Double mechanicalVibration) {
+        this.mechanicalVibration = mechanicalVibration;
+    }
+
+    public String getImageFilename() {
+        return imageFilename;
+    }
+
+    public void setImageFilename(String imageFilename) {
+        this.imageFilename = imageFilename;
+    }
+
+    public LocalDateTime getCaptureDate() {
+        return captureDate;
+    }
+
+    public void setCaptureDate(LocalDateTime captureDate) {
+        this.captureDate = captureDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

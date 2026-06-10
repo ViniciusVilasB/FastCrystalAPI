@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/samples")
 public class SampleController {

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/images")
 public class ImageController {

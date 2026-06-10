@@ -1,6 +1,7 @@
 package com.example.FastCrystal.Controller;
 
 import com.example.FastCrystal.Dto.ListSampleDto;
+import com.example.FastCrystal.Dto.UpdateSampleDto;
 import com.example.FastCrystal.Model.Sample;
 import com.example.FastCrystal.Service.SampleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +63,22 @@ public class SampleController {
     public ResponseEntity<ListSampleDto>
     getLatestSample(@PathVariable Integer sampleId) {
         return ResponseEntity.ok(service.getLatestSample(sampleId));
+    }
+
+    // PUT
+    @PutMapping("/{id}")
+    public ResponseEntity<Sample> updateSample(@PathVariable Integer id, @RequestBody UpdateSampleDto dto) {
+
+        return ResponseEntity.ok(
+                service.updateSample(id, dto));
+    }
+
+    // DELETE
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSample(@PathVariable Integer id) {
+
+        service.deleteSample(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

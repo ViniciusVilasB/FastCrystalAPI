@@ -1,6 +1,7 @@
 package com.example.FastCrystal.Service;
 
 import com.example.FastCrystal.Dto.ListSampleDto;
+import com.example.FastCrystal.Dto.UpdateSampleDto;
 import com.example.FastCrystal.Model.Prediction;
 import com.example.FastCrystal.Model.Sample;
 import com.example.FastCrystal.Repository.PredictionRepository;
@@ -20,7 +21,7 @@ import java.util.UUID;
 public class SampleService {
 
     @Autowired
-    private SampleRepository repository;
+    private SampleRepository sampleRepository;
     @Autowired
     private PredictionRepository predictionRepository;
     private static final String UPLOAD_DIR = "uploads";
@@ -55,12 +56,12 @@ public class SampleService {
 
         // CHAMAR IA AQUI
 
-        return repository.save(sample);
+        return sampleRepository.save(sample);
     }
 
     public List<Integer> getAvailableSamples() {
 
-        return repository
+        return sampleRepository
                 .findAll()
                 .stream()
                 .map(Sample::getSampleId)
@@ -70,7 +71,7 @@ public class SampleService {
     }
 
     public List<ListSampleDto> getAllSamples() {
-        List<Sample> samples = repository.findAll();
+        List<Sample> samples = sampleRepository.findAll();
 
         return samples.stream().map(sample -> {
             ListSampleDto dto = new ListSampleDto();
@@ -82,7 +83,7 @@ public class SampleService {
             dto.setGravityLevel(sample.getGravityLevel());
             dto.setMechanicalVibration(sample.getMechanicalVibration());
             dto.setStatus(sample.getStatus());
-            dto.setImageUrl("http://localhost:8080/api/images/" + sample.getImageFilename());
+            dto.setImageUrl("http://localhost:8080/images/" + sample.getImageFilename());
             int score = calculateEfficiency(sample);
             dto.setExpeditionEfficiencyScore(score);
             dto.setRecommendedAction(determineAction(score));
@@ -103,7 +104,7 @@ public class SampleService {
 
     public ListSampleDto getLatestSample(Integer sampleId) {
 
-        Sample sample = repository.findTopBySampleIdOrderByCreatedAtDesc(sampleId).orElseThrow();
+        Sample sample = sampleRepository.findTopBySampleIdOrderByCreatedAtDesc(sampleId).orElseThrow();
 
         ListSampleDto dto = new ListSampleDto();
 
@@ -129,6 +130,45 @@ public class SampleService {
         }
 
         return dto;
+    }
+
+    public Sample updateSample(Integer id, UpdateSampleDto dto) {
+
+        Sample sample = sampleRepository.findById(id).orElseThrow(() -> new RuntimeException("Sample not found"));
+
+        sample.setProteinName(dto.getProteinName());
+        sample.setGravityLevel(dto.getGravityLevel());
+        sample.setTemperature(dto.getTemperature());
+        sample.setMechanicalVibration(dto.getMechanicalVibration());
+        sample.setStatus(dto.getStatus());
+
+        return sampleRepository.save(sample);
+    }
+
+    public void deleteSample(Integer id) {
+
+        Sample sample = sampleRepository.findById(id).orElseThrow(() -> new RuntimeException("Sample not found"));
+
+        if (sample.getImageFilename() != null) {
+
+            Path imagePath =
+                    Paths.get("uploads")
+                            .resolve(
+                                    sample.getImageFilename());
+
+            try {
+                Files.deleteIfExists(
+                        imagePath);
+            }
+            catch (IOException e) {
+
+                System.out.println(
+                        "Failed to delete image: "
+                                + e.getMessage());
+            }
+        }
+
+        sampleRepository.delete(sample);
     }
 
     // Helper functions

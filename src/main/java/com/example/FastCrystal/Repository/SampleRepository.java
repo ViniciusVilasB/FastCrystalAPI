@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SampleRepository extends JpaRepository<Sample, Long> {
+public interface SampleRepository extends JpaRepository<Sample, Integer> {
     List<Sample> findByOrderBySampleIdAsc();
 
     Optional<Sample> findTopBySampleIdOrderByCreatedAtDesc(Integer sampleId);

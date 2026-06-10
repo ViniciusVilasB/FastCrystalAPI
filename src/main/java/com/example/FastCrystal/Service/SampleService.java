@@ -1,5 +1,6 @@
 package com.example.FastCrystal.Service;
 
+import com.example.FastCrystal.Dto.FastApiPredictionDto;
 import com.example.FastCrystal.Dto.ListSampleDto;
 import com.example.FastCrystal.Dto.UpdateSampleDto;
 import com.example.FastCrystal.Model.Prediction;
@@ -8,6 +9,7 @@ import com.example.FastCrystal.Repository.PredictionRepository;
 import com.example.FastCrystal.Repository.SampleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -22,9 +24,14 @@ public class SampleService {
 
     @Autowired
     private SampleRepository sampleRepository;
+
     @Autowired
     private PredictionRepository predictionRepository;
+
     private static final String UPLOAD_DIR = "uploads";
+
+    // RestTemplate is used to make HTTP requests to the Python API
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public Sample createSample(
             Integer sampleId,
@@ -54,9 +61,40 @@ public class SampleService {
         sample.setImageFilename(fileName);
         sample.setStatus("PENDING");
 
-        // CHAMAR IA AQUI
+        // 1. Save the sample FIRST so we have it persisted
+        Sample savedSample = sampleRepository.save(sample);
 
-        return sampleRepository.save(sample);
+        // 2. Call AI and save prediction
+        try {
+            requestAiPredictionAndSave(savedSample);
+            // If success, update status
+            savedSample.setStatus("ANALYZED");
+            savedSample = sampleRepository.save(savedSample);
+        } catch (Exception e) {
+            System.err.println("Failed to fetch prediction from AI: " + e.getMessage());
+        }
+
+        return savedSample;
+    }
+
+    private void requestAiPredictionAndSave(Sample sample) {
+        // Calling Python API using the sampleId parameter
+        String pythonApiUrl = "http://localhost:8000/predict/" + sample.getSampleId();
+
+        // Perform GET request and map JSON to DTO
+        FastApiPredictionDto response = restTemplate.getForObject(pythonApiUrl, FastApiPredictionDto.class);
+
+        if (response != null && response.getResult() != null) {
+            Prediction prediction = new Prediction();
+
+            // Linking the prediction to the database internal ID
+            prediction.setSampleId(sample.getId());
+            prediction.setClassification(response.getResult().getClassification());
+            prediction.setConfidence(response.getResult().getConfidencePercentage());
+            prediction.setPredictionDate(LocalDateTime.now());
+
+            predictionRepository.save(prediction);
+        }
     }
 
     public List<Integer> getAvailableSamples() {
@@ -150,21 +188,11 @@ public class SampleService {
         Sample sample = sampleRepository.findById(id).orElseThrow(() -> new RuntimeException("Sample not found"));
 
         if (sample.getImageFilename() != null) {
-
-            Path imagePath =
-                    Paths.get("uploads")
-                            .resolve(
-                                    sample.getImageFilename());
-
+            Path imagePath = Paths.get("uploads").resolve(sample.getImageFilename());
             try {
-                Files.deleteIfExists(
-                        imagePath);
-            }
-            catch (IOException e) {
-
-                System.out.println(
-                        "Failed to delete image: "
-                                + e.getMessage());
+                Files.deleteIfExists(imagePath);
+            } catch (IOException e) {
+                System.out.println("Failed to delete image: " + e.getMessage());
             }
         }
 
